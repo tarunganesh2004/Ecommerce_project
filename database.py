@@ -21,7 +21,11 @@ class Database:
             product_id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             price REAL,
-            quantity INTEGER
+            quantity INTEGER,
+            category_id INTEGER,
+            supplier_id INTEGER,
+            FOREIGN KEY (category_id) REFERENCES Category(category_id),
+            FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id)
         )""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS Orders (
             order_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,10 +75,34 @@ class Database:
         )""")
         self.conn.commit()
 
-    def add_product(self, name, price, quantity):
+    def add_product(self, name, price, quantity, category_id, supplier_id):
         self.cursor.execute(
-            "INSERT INTO Product (name, price, quantity) VALUES (?, ?, ?)",
-            (name, price, quantity),
+            "INSERT INTO Product (name, price, quantity, category_id, supplier_id) VALUES (?, ?, ?, ?, ?)",
+            (name, price, quantity, category_id, supplier_id),
+        )
+        product_id = self.cursor.lastrowid
+        self.conn.commit()
+        return product_id
+
+    def add_supplier(self, product_id, product_name, contact_info, supplier_address):
+        self.cursor.execute(
+            "INSERT INTO Supplier (product_id, product_name, contact_info, supplier_address) VALUES (?, ?, ?, ?)",
+            (product_id, product_name, contact_info, supplier_address),
+        )
+        self.conn.commit()
+
+    def add_category(self, category_name, description):
+        self.cursor.execute(
+            "INSERT INTO Category (category_name, description) VALUES (?, ?)",
+            (category_name, description),
+        )
+        self.conn.commit()
+        return self.cursor.lastrowid
+
+    def add_payment(self, amount, payment_method, order_id):
+        self.cursor.execute(
+            "INSERT INTO Payments (amount, payment_method, order_id) VALUES (?, ?, ?)",
+            (amount, payment_method, order_id),
         )
         self.conn.commit()
 
@@ -83,8 +111,9 @@ class Database:
             "INSERT INTO Orders (user_id, price, quantity, product_name, order_date) VALUES (?, ?, ?, ?, ?)",
             (user_id, price, quantity, product_name, order_date),
         )
+        order_id = self.cursor.lastrowid
         self.conn.commit()
-        return self.cursor.lastrowid
+        return order_id
 
     def add_review(self, product_id, user_id, rating):
         self.cursor.execute(
@@ -104,10 +133,12 @@ class Database:
         self.cursor.execute("SELECT * FROM Product")
         return self.cursor.fetchall()
 
-    def update_product(self, product_id, name, price, quantity):
+    def update_product(
+        self, product_id, name, price, quantity, category_id, supplier_id
+    ):
         self.cursor.execute(
-            "UPDATE Product SET name = ?, price = ?, quantity = ? WHERE product_id = ?",
-            (name, price, quantity, product_id),
+            "UPDATE Product SET name = ?, price = ?, quantity = ?, category_id = ?, supplier_id = ? WHERE product_id = ?",
+            (name, price, quantity, category_id, supplier_id, product_id),
         )
         self.conn.commit()
 
@@ -127,68 +158,16 @@ class Database:
         self.cursor.execute("SELECT * FROM Wishlist WHERE user_id = ?", (user_id,))
         return self.cursor.fetchall()
 
-    def add_supplier(self, product_id, product_name, contact_info, supplier_address):
-        self.cursor.execute(
-            "INSERT INTO Supplier (product_id, product_name, contact_info, supplier_address) VALUES (?, ?, ?, ?)",
-            (product_id, product_name, contact_info, supplier_address),
-        )
-        self.conn.commit()
-
     def get_suppliers(self):
         self.cursor.execute("SELECT * FROM Supplier")
         return self.cursor.fetchall()
-
-    def update_supplier(
-        self, supplier_id, product_id, product_name, contact_info, supplier_address
-    ):
-        self.cursor.execute(
-            "UPDATE Supplier SET product_id = ?, product_name = ?, contact_info = ?, supplier_address = ? WHERE supplier_id = ?",
-            (product_id, product_name, contact_info, supplier_address, supplier_id),
-        )
-        self.conn.commit()
-
-    def delete_supplier(self, supplier_id):
-        self.cursor.execute(
-            "DELETE FROM Supplier WHERE supplier_id = ?", (supplier_id,)
-        )
-        self.conn.commit()
-
-    def add_category(self, category_name, description):
-        self.cursor.execute(
-            "INSERT INTO Category (category_name, description) VALUES (?, ?)",
-            (category_name, description),
-        )
-        self.conn.commit()
 
     def get_categories(self):
         self.cursor.execute("SELECT * FROM Category")
         return self.cursor.fetchall()
 
-    def update_category(self, category_id, category_name, description):
-        self.cursor.execute(
-            "UPDATE Category SET category_name = ?, description = ? WHERE category_id = ?",
-            (category_name, description, category_id),
-        )
-        self.conn.commit()
-
-    def delete_category(self, category_id):
-        self.cursor.execute(
-            "DELETE FROM Category WHERE category_id = ?", (category_id,)
-        )
-        self.conn.commit()
-
-    def add_payment(self, amount, payment_method, order_id):
-        self.cursor.execute(
-            "INSERT INTO Payments (amount, payment_method, order_id) VALUES (?, ?, ?)",
-            (amount, payment_method, order_id),
-        )
-        self.conn.commit()
-
-    def get_payments(self, user_id):
-        self.cursor.execute(
-            "SELECT p.* FROM Payments p JOIN Orders o ON p.order_id = o.order_id WHERE o.user_id = ?",
-            (user_id,),
-        )
+    def get_payments(self):
+        self.cursor.execute("SELECT * FROM Payments")
         return self.cursor.fetchall()
 
     def close(self):
