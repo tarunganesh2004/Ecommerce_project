@@ -78,4 +78,3 @@ CREATE TABLE Payments (
 );
 
 
-
