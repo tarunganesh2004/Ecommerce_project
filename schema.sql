@@ -76,5 +76,3 @@ CREATE TABLE Payments (
     order_id INTEGER,
     FOREIGN KEY (order_id) REFERENCES Orders(order_id)
 );
-
-
