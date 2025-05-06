@@ -218,9 +218,9 @@ You can package the application into a standalone `.exe` file for Windows using 
 Contributions are welcome! To contribute:
 
 1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/your-feature`).
-3. Make your changes and commit them (`git commit -m "Add your feature"`).
-4. Push to the branch (`git push origin feature/your-feature`).
+2. Create a new branch (`git checkout -b feature/new-feature`).
+3. Make your changes and commit them (`git commit -m "Add new feature"`).
+4. Push to the branch (`git push origin feature/new-feature`).
 5. Open a pull request with a detailed description of your changes.
 
 
